@@ -64,3 +64,5 @@ O sistema utiliza o protocolo MQTT (Message Queuing Telemetry Transport) para co
 
 ---
 **Autores:** Marcos Vinícius, Tainara Damascena
+
+UNIVERSIDADE PRESBITERIANA MACKENZIE - FCI

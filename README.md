@@ -1,79 +1,66 @@
-# Sistema de Monitoramento Cardíaco Remoto IoT (ESP32)
+# Sistema de Monitoramento Cardíaco IoT com MQTT
 
-Este repositório contém a documentação e o código fonte do protótipo de um sistema de acompanhamento remoto de saúde cardiovascular desenvolvido como parte da disciplina de Objetos Inteligentes Conectados.
+Este repositório contém o projeto de um dispositivo IoT para monitoramento remoto de frequência cardíaca, desenvolvido como parte da disciplina de Objetos Inteligentes Conectados. O sistema coleta dados vitais, processa-os localmente e os transmite via internet para um broker MQTT.
 
-## 📋 Descrição do Projeto
+## 📋 1. Descrição e Funcionamento
+O sistema simula a leitura de um sensor de pulso, processa o sinal para calcular os Batimentos Por Minuto (BPM) e classifica o estado do paciente em quatro níveis de risco (Baixa, Normal, Atenção, Alerta).
 
-O objetivo deste projeto é fornecer uma solução de baixo custo para o monitoramento contínuo da frequência cardíaca. O sistema coleta dados vitais através de sensores, processa as informações localmente em um microcontrolador ESP32 e exibe o status em tempo real através de atuadores visuais e sonoros. Além disso, o sistema está preparado para transmitir esses dados para a nuvem utilizando o protocolo MQTT, permitindo o acompanhamento remoto por profissionais de saúde.
+**Fluxo de Funcionamento:**
+1.  **Coleta:** O sensor analógico lê a variação de sinal simulada.
+2.  **Processamento:** O ESP32 converte o sinal em BPM e determina a categoria de risco.
+3.  **Feedback Local:** O display LCD exibe o BPM e a categoria; o LED RGB muda de cor e o Buzzer emite alertas sonoros.
+4.  **Conectividade:** O dispositivo se conecta via WiFi e envia os dados via protocolo MQTT para a nuvem.
+5.  **Comando Remoto:** O sistema também assina um tópico MQTT para receber comandos externos (ex: desligar alertas).
 
-**Funcionalidades:**
-* Leitura simulada de batimentos cardíacos (BPM).
-* Classificação de risco em 4 níveis (Baixa, Normal, Atenção, Alerta).
-* Feedback visual via LED RGB e Display LCD.
-* Feedback sonoro via Buzzer para situações críticas.
-* Simulação de envio de telemetria via protocolo MQTT.
+## 🛠️ 2. Descrição do Hardware
 
-## 🛠️ Hardware Utilizado
+O projeto foi validado no simulador Wokwi com os seguintes componentes e pinagem:
 
-O projeto foi desenvolvido e validado no simulador Wokwi, utilizando a seguinte lista de componentes:
+| Componente | Pino ESP32 | Detalhes Técnicos |
+| :--- | :---: | :--- |
+| **Microcontrolador** | - | ESP32 DevKit V1 |
+| **Sensor de Pulso** | GPIO 34 | Simulado por Potenciômetro (Entrada Analógica) |
+| **LED RGB** | 25(R), 26(G), 27(B) | **Tipo: Ânodo Comum** (Lógica invertida no código) |
+| **Display LCD** | 21(SDA), 22(SCL) | Modelo 16x2 com interface I2C (Endereço 0x27) |
+| **Buzzer** | GPIO 14 | Piezoelétrico passivo |
 
-| Componente | Quantidade | Especificação Técnica | Função |
-| :--- | :---: | :--- | :--- |
-| **Microcontrolador** | 1 | ESP32 DevKit V1 | Processamento e Conectividade Wi-Fi/Bluetooth |
-| **Sensor de Pulso** | 1 | Potenciômetro (Simulação)* | Simula a entrada analógica do Pulse Sensor (0-3.3V) |
-| **Display** | 1 | LCD 16x2 com Módulo I2C | Exibição local dos batimentos e status |
-| **Atuador Visual** | 1 | LED RGB (Cátodo/Ânodo Comum) | Indicação colorida do estado de saúde |
-| **Atuador Sonoro** | 1 | Buzzer Piezoelétrico 5V | Alerta sonoro para taquicardia/bradicardia |
-| **Resistores** | 3 | 220Ω | Limitação de corrente para o LED RGB |
+*Nota: O LED RGB utilizado é do tipo Ânodo Comum, onde o pino comum é conectado ao 3.3V e os pinos de controle (R, G, B) são acionados com sinal LOW (ou PWM invertido).*
 
-*\*Nota: No ambiente físico, substitui-se o potenciômetro pelo "Pulse Sensor" analógico compatível com Arduino/ESP32.*
+## 💻 3. Software e Código
+O firmware (`sketch.ino`) foi desenvolvido em C++ utilizando a Arduino IDE e as seguintes bibliotecas:
+* `WiFi.h`: Para conexão TCP/IP.
+* `PubSubClient.h`: Para comunicação MQTT.
+* `LiquidCrystal_I2C.h`: Para controle do display.
 
-### Pinagem e Conexões (Netlist)
+A lógica de conversão utiliza a função `map()` para transformar a leitura analógica (0-4095) em uma faixa de BPM (40-130).
 
-| Componente | Pino Componente | Pino ESP32 | Observação |
-| :--- | :--- | :--- | :--- |
-| **Sensor (Potenciômetro)** | Sinal (S) | GPIO 34 | Entrada Analógica (ADC) |
-| **Display LCD I2C** | SDA | GPIO 21 | Comunicação I2C |
-| **Display LCD I2C** | SCL | GPIO 22 | Comunicação I2C |
-| **LED RGB** | Vermelho (R) | GPIO 25 | Saída Digital / PWM |
-| **LED RGB** | Verde (G) | GPIO 26 | Saída Digital / PWM |
-| **LED RGB** | Azul (B) | GPIO 27 | Saída Digital / PWM |
-| **Buzzer** | Positivo (+) | GPIO 14 | Saída Digital / PWM |
+## 📡 4. Interfaces e Protocolos de Comunicação
 
-## 💻 Software e Lógica
-
-O firmware foi desenvolvido em C++ utilizando a Arduino IDE.
-
-### Lógica de Monitoramento
-O sistema mapeia a leitura analógica (0-4095) para uma faixa de BPM (40-130) e aplica as seguintes regras condicionais:
-
-1.  **< 60 BPM (Baixa):** LED Azul, Sem som.
-2.  **60 - 100 BPM (Normal):** LED Verde, Sem som.
-3.  **101 - 120 BPM (Atenção):** LED Amarelo, Buzzer intermitente (2000Hz).
-4.  **> 120 BPM (Alerta):** LED Vermelho, Buzzer rápido (2500Hz).
-
-## 📡 Protocolos e Comunicação
-
-O projeto baseia-se na arquitetura TCP/IP para comunicação via Internet.
+### Conectividade (TCP/IP)
+O dispositivo opera sobre a pilha TCP/IP, conectando-se à rede WiFi (no simulador: "Wokwi-GUEST") para acesso à internet.
 
 ### Protocolo MQTT
-Para o envio de dados à nuvem, utiliza-se o protocolo **MQTT (Message Queuing Telemetry Transport)**.
-* **Arquitetura:** Publish/Subscribe.
-* **Tópico de Publicação (Exemplo):** `saude/paciente_01/bpm`
-* **Payload:** Valor inteiro do BPM.
-* **Implementação:** No código atual (`sketch.ino`), a função de publicação MQTT é simulada através da porta Serial (`Serial.print`) para validação de lógica no Wokwi, mas o código está estruturado para receber a biblioteca `PubSubClient` para conexão real com brokers como Mosquitto ou HiveMQ.
+O sistema utiliza o protocolo MQTT (Message Queuing Telemetry Transport) para comunicação leve e assíncrona.
 
-## 🚀 Como Reproduzir (Wokwi)
+* **Broker Utilizado:** `broker.emqx.io` (Público)
+* **Porta:** 1883
+* **QoS:** 0
 
-1.  Acesse [Wokwi.com](https://wokwi.com).
-2.  Crie um novo projeto para ESP32.
-3.  Copie o conteúdo de `diagram.json` deste repositório para a aba de diagrama.
-4.  Copie o conteúdo de `sketch.ino` deste repositório para a aba de código.
-5.  Instale a biblioteca: `LiquidCrystal I2C` pelo gerenciador de bibliotecas do Wokwi.
-6.  Inicie a simulação.
+### Tópicos MQTT
+
+| Ação | Tópico | Payload (Exemplo) | Descrição |
+| :--- | :--- | :--- | :--- |
+| **Publicação** | `monitorcardiaco/bpm` | `85` | Envia o valor atual do BPM a cada segundo. |
+| **Subscrição** | `monitorcardiaco/cmd` | `LED_RED` | Recebe comandos para alteração remota de estado. |
+
+## 🚀 Como Reproduzir
+
+1.  Acesse o [Wokwi](https://wokwi.com).
+2.  Crie um novo projeto ESP32.
+3.  Copie o conteúdo de `diagram.json` para a aba de diagrama.
+4.  Copie o conteúdo de `sketch.ino` para a aba de código.
+5.  Instale as bibliotecas `PubSubClient` e `LiquidCrystal I2C` no gerenciador de bibliotecas.
+6.  Inicie a simulação. O monitor serial mostrará a conexão WiFi e o envio de mensagens MQTT.
 
 ---
-**Autores:**
-Marcos Vinicius Vieira dos Santos Assis
-Tainara Damascena Farias
-*Universidade Presbiteriana Mackenzie - FCI*
+**Autores:** Marcos Vinícius, Tainara Damascena

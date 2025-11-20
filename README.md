@@ -21,8 +21,8 @@ O sistema opera capturando dados de um sensor de pulso (simulado), processando a
 
 Para manter este README conciso, os detalhes técnicos foram separados em documentos específicos:
 
-* **[INFRASTRUCTURE.md](INFRASTRUCTURE.md):** Consulte este arquivo para ver o **Diagrama de Conexões (Pinout)**, a lista completa de materiais (BOM) e as especificações da arquitetura de rede e do Broker MQTT.
-* **[OPERATION.md](OPERATION.md):** Leia este documento para entender a **Lógica de Funcionamento**, a tabela de cores/sons de alerta e como interpretar os logs de telemetria de performance (latência).
+* **[INFRASTRUCTURE.md](docs/infra/INFRASTRUCTURE.md):** Consulte este arquivo para ver o **Diagrama de Conexões (Pinout)**, a lista completa de materiais (BOM) e as especificações da arquitetura de rede e do Broker MQTT.
+* **[OPERATION.md](docs/operation/OPERATION.md):** Leia este documento para entender a **Lógica de Funcionamento**, a tabela de cores/sons de alerta e como interpretar os logs de telemetria de performance (latência).
 
 ## 🚀 Como Rodar no Wokwi
 
@@ -30,9 +30,9 @@ Como o repositório já inclui os arquivos de configuração, você pode reprodu
 
 1.  Acesse o site do [Wokwi](https://wokwi.com/) e inicie um novo projeto para **ESP32**.
 2.  **Importar o Código:**
-    * Abra o arquivo `sketch.ino` deste repositório, copie todo o código e cole na aba **sketch.ino** do editor do Wokwi.
+    * Abra o arquivo [sketch.ino](scr/sketch.ino) deste repositório, copie todo o código e cole na aba **sketch.ino** do editor do Wokwi.
 3.  **Importar o Hardware:**
-    * Abra o arquivo `diagram.json` deste repositório e copie seu conteúdo.
+    * Abra o arquivo [diagram.json](scr/diagram.json) deste repositório e copie seu conteúdo.
     * No Wokwi, acesse a aba `diagram.json` e substitua o conteúdo existente pelo que você copiou. Isso montará automaticamente as conexões (fios, sensores, display) conforme o esquema do projeto.
 4.  **Adicionar Bibliotecas:**
     * No gerenciador de bibliotecas do Wokwi (aba *Library Manager*), adicione as dependências:
